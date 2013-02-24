@@ -1,6 +1,7 @@
 name: dxr-komodo-build
 framework:
     type: python
+    runtime: python27
 services:
     dxr-komodo-www: filesystem
     ${name}-cache: filesystem
@@ -19,6 +20,9 @@ requirements:
     running:
         ubuntu:
             - subversion
+    pip:
+        - setuptools_git
+        - pysqlite
 mem: 512M
 instances: 1
 processes:
@@ -38,16 +42,17 @@ hooks:
         - git config --file dxr/.gitmodules --replace-all submodule.trilite.url
             $(git config --file dxr/.gitmodules --get submodule.trilite.url |
                 sed s@git:@https:@)
-        - /usr/bin/pip install --user setuptools_git
-        - /usr/bin/pip install --user --requirement=dxr/requirements.txt
     post-staging:
+        - echo $PATH
+        - "[ ! -d /staging/staged/python/bin/ ] && mkdir -p /staging/staged/python/bin/"
         - ln -s `which clang-3.2` /staging/staged/python/bin/clang
         - ln -s `which clang++-3.2` /staging/staged/python/bin/clang++
         - ln -s `which llvm-config-3.2` /staging/staged/python/bin/llvm-config
+        - cp -f sqlite3.py $PYTHONUSERBASE/lib/python2.7/site-packages/
         - cd dxr && git submodule init
         - cd dxr && git submodule update
         - make -C dxr
-        - cd dxr ; /usr/bin/python setup.py build # --debug
-        - cd dxr ; /usr/bin/python setup.py install --user --skip-build
+        - cd dxr ; python setup.py build # --debug
+        - cd dxr ; python setup.py install --user --skip-build
 
 # vim: set et ts=4 :
