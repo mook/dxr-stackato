@@ -1,0 +1,6 @@
+# stackato.yml for indexing DXR
+tree: dxr
+inherit: common.yml
+mem: 512M
+# DXR is small enough for indexing on launch to be worthwhile
+command: $STACKATO_DOCUMENT_ROOT/index-${tree}.sh --hang

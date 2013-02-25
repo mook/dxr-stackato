@@ -2,8 +2,6 @@
 
 set -e
 
-export all_proxy=$http_proxy
-export https_proxy=$http_proxy
 APP_DIR="${STACKATO_DOCUMENT_ROOT}"
 OUT_DIR="${APP_DIR}/build-root"
 KOMODO_DIR="${OUT_DIR}/komodo"
@@ -19,15 +17,13 @@ DATE="$(date -R -d "$(svn info --xml "${KOMODO_DIR}" | grep '<date>' | sed 's@<[
     --release                 \
     --no-strip                \
     --moz-objdir=obj-release  \
-    --gcc=clang               \
-    --gxx=clang++             \
+    --gcc="$CC"               \
+    --gxx="$CXX"              \
 )
 
 MOZILLA_DIR="${KOMODO_DIR}/mozilla/build/$(cd ${KOMODO_DIR}/mozilla && python -c 'import config; print config.srcTreeName')/mozilla"
 MOZ_OBJ_DIR="${MOZILLA_DIR}/obj-release"
 [ -d "${MOZ_OBJ_DIR}" ] || mkdir -p "${MOZ_OBJ_DIR}"
-
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}:}${STACKATO_DOCUMENT_ROOT}/dxr/trilite/"
 
 cat >"${OUT_DIR}/dxr.config" <<-EOF
 
@@ -82,3 +78,10 @@ cat >"${OUT_DIR}/dxr.config" <<-EOF
 	EOF
 
 dxr-build.py -f "${OUT_DIR}/dxr.config"
+echo Done.
+
+#  Prevent stackato from restarting this
+while [ "$1" == "--hang" ] ; do
+    sleep 3650d
+done
+

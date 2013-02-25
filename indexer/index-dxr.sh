@@ -7,8 +7,6 @@ OUT_DIR="${APP_DIR}/build-root"
 [ -d "${OUT_DIR}" ] || mkdir -p "${OUT_DIR}"
 [ -d "${OUT_DIR}/dummy" ] || mkdir -p "${OUT_DIR}/dummy"
 
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}:}${STACKATO_DOCUMENT_ROOT}/dxr/trilite/"
-
 cat >"${OUT_DIR}/dxr.config" <<-EOF
 
 [DXR]
@@ -35,6 +33,6 @@ dxr-build.py -f "${OUT_DIR}/dxr.config"
 echo Done.
 
 #  Prevent stackato from restarting this
-if [ "$1" == "--hang" ] ; then
+while [ "$1" == "--hang" ] ; do
     sleep 3650d
-fi
+done

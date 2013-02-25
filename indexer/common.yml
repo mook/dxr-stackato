@@ -1,9 +1,9 @@
-name: dxr-komodo-build
+name: dxr-${tree}-indexer
 framework:
     type: python
     runtime: python27
 services:
-    dxr-komodo-www: filesystem
+    dxr-${tree}-www: filesystem
     ${name}-cache: filesystem
 requirements:
     ubuntu:
@@ -23,17 +23,14 @@ requirements:
     pip:
         - setuptools_git
         - pysqlite
-mem: 512M
 instances: 1
 processes:
     web: ~
 env:
     https_proxy: $http_proxy
     LD_LIBRARY_PATH: $STACKATO_DOCUMENT_ROOT/dxr/trilite
-#command: ./build.sh
-command: ./index-dxr.sh --hang
 cron:
-    - "@daily $STACKATO_DOCUMENT_ROOT/index-dxr.sh"
+    - "@daily $STACKATO_DOCUMENT_ROOT/index-${tree}.sh"
 hooks:
     pre-staging:
         # Don't use alternates in the VM, they don't exist
@@ -43,7 +40,6 @@ hooks:
             $(git config --file dxr/.gitmodules --get submodule.trilite.url |
                 sed s@git:@https:@)
     post-staging:
-        - echo $PATH
         - "[ ! -d /staging/staged/python/bin/ ] && mkdir -p /staging/staged/python/bin/"
         - ln -s `which clang-3.2` /staging/staged/python/bin/clang
         - ln -s `which clang++-3.2` /staging/staged/python/bin/clang++
