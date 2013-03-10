@@ -1,0 +1,1 @@
+@daily $STACKATO_DOCUMENT_ROOT/index-$DXR_TREE.sh &>> $STACKATO_APP_ROOT/logs/cron.log

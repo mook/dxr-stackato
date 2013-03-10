@@ -1,10 +1,10 @@
-name: dxr-komodo-server
+name: dxr-${tree}-server
 framework:
     type: python
     runtime: python27
     start-file: dxr/dxr/dxr.wsgi
 services:
-    dxr-komodo-www: filesystem
+    dxr-${tree}-www: filesystem
     ${name}-cache: filesystem
 requirements:
     staging:
@@ -19,12 +19,10 @@ requirements:
         - setuptools_git
         - pysqlite
 url:
-    - ${name}
+    - dxr-${tree}.${target-base}
 env:
-    DXR_FOLDER: $STACKATO_FILESYSTEM_DXR_KOMODO_WWW
     LD_LIBRARY_PATH: $STACKATO_DOCUMENT_ROOT/dxr/trilite
     https_proxy: $http_proxy
-mem: 200M
 instances: 1
 hooks:
     pre-staging:

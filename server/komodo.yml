@@ -1,0 +1,6 @@
+# stackato.yml for serving Komodo
+tree: komodo
+inherit: common.yml
+mem: 256M
+env:
+    DXR_FOLDER: $STACKATO_FILESYSTEM_DXR_KOMODO_WWW

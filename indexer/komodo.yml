@@ -1,6 +1,10 @@
 # stackato.yml for indexing Komodo
 tree: komodo
 inherit: common.yml
-mem: 4096M
+mem: 1536M
 # Komodo is too large to index on launch
-command: while true; do sleep 3650d; done
+command:
+    echo "Sleeping...";
+    while true;
+        do sleep 3650d;
+    done
