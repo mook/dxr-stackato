@@ -27,8 +27,7 @@ processes:
 env:
     https_proxy: $http_proxy
     LD_LIBRARY_PATH: $STACKATO_DOCUMENT_ROOT/dxr/trilite
-cron:
-    - "@daily $STACKATO_DOCUMENT_ROOT/index-${tree}.sh"
+    DXR_TREE: ${tree}
 hooks:
     pre-staging:
         # Don't use alternates in the VM, they don't exist
@@ -46,5 +45,7 @@ hooks:
         - make -C dxr
         - cd dxr ; python setup.py build # --debug
         - cd dxr ; python setup.py install --user --skip-build
+    pre-running:
+        - echo "pre-running!"
 
 # vim: set et ts=4 :

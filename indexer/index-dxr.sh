@@ -7,10 +7,11 @@ OUT_DIR="${APP_DIR}/build-root"
 [ -d "${OUT_DIR}" ] || mkdir -p "${OUT_DIR}"
 [ -d "${OUT_DIR}/dummy" ] || mkdir -p "${OUT_DIR}/dummy"
 
+TARGET_FOLDER="STACKATO_FILESYSTEM_DXR_${DXR_TREE^^}_WWW"
 cat >"${OUT_DIR}/dxr.config" <<-EOF
 
 [DXR]
-target_folder       = ${STACKATO_FILESYSTEM_DXR_KOMODO_WWW}
+target_folder       = ${!TARGET_FOLDER}
 nb_jobs             = 2
 temp_folder         = ${OUT_DIR}/temp
 log_folder          = ${OUT_DIR}/logs
