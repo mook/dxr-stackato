@@ -12,29 +12,31 @@ DATE="$(date -R -d "$(svn info --xml "${KOMODO_DIR}" | grep '<date>' | sed 's@<[
 
 ( cd "${KOMODO_DIR}/mozilla" &&
   python build.py configure   \
-    --moz-src=1800            \
     --komodo-version=8.10     \
     --release                 \
     --no-strip                \
     --moz-objdir=obj-release  \
     --gcc="$CC"               \
-    --gxx="$CXX"              \
+    --gxx="$CXX"             &&
+  python build.py distclean src src_pyxpcom patch patch_pyxpcom patch_komodo
 )
 
 MOZILLA_DIR="${KOMODO_DIR}/mozilla/build/$(cd ${KOMODO_DIR}/mozilla && python -c 'import config; print config.srcTreeName')/mozilla"
 MOZ_OBJ_DIR="${MOZILLA_DIR}/obj-release"
 [ -d "${MOZ_OBJ_DIR}" ] || mkdir -p "${MOZ_OBJ_DIR}"
+[ -d "${KOMODO_DIR}/build" ] || mkdir -p "${KOMODO_DIR}/build"
 
 cat >"${OUT_DIR}/dxr.config" <<-EOF
 
 	[DXR]
-	target_folder       = ${STACKATO_FILESYSTEM}
+	target_folder       = ${OUT_DIR}/target
 	nb_jobs             = 2
 	temp_folder         = ${OUT_DIR}/temp
 	log_folder          = ${OUT_DIR}/logs
-	enabled_plugins     = pygmentize clang
+	enabled_plugins     = pygmentize
 	generated_date      = ${DATE}
 	template            = ${APP_DIR}/dxr/dxr/templates
+	plugin_folder       = ${APP_DIR}/dxr/dxr/plugins
 
 	[Komodo]
 	source_folder       = ${KOMODO_DIR}
@@ -54,12 +56,6 @@ cat >"${OUT_DIR}/dxr.config" <<-EOF
 	source_folder       = ${MOZILLA_DIR}
 	build_command       = cd "${KOMODO_DIR}/mozilla" && \
 	                        python build.py             \
-	                          distclean                 \
-	                          src                       \
-	                          src_pyxpcom               \
-	                          patch                     \
-	                          patch_pyxpcom             \
-	                          patch_komodo              \
 	                          configure_mozilla         \
 	                          mozilla                   \
 	                          pluginsdk                 \
@@ -77,7 +73,9 @@ cat >"${OUT_DIR}/dxr.config" <<-EOF
 
 	EOF
 
-dxr-build.py -f "${OUT_DIR}/dxr.config"
+cd ${APP_DIR}/dxr/bin
+python dxr-build.py -f "${OUT_DIR}/dxr.config"
+rsync -a "${OUT_DIR}/target" "${STACKATO_FILESYSTEM}"
 echo Done.
 
 #  Prevent stackato from restarting this

@@ -2,5 +2,28 @@
 tree: komodo
 inherit: common.yml
 mem: 4096M
+requirements:
+    running:
+        ubuntu:
+            - autoconf2.13
+            - libasound2-dev
+            - libcurl4-openssl-dev
+            - libiw-dev
+            - libnotify-dev
+            - libxt-dev
+            - mesa-common-dev
+            - uuid
+            - yasm
+            - cdbs
+            - m4
+            - autotools-dev
+            - zip
+            - libx11-dev
+            - libxt-dev
+            - libxext-dev
+            - libgtk2.0-dev
+            - libdbus-glib-1-dev
+            - rsync
 # Komodo is too large to index on launch
-command: while true; do sleep 3650d; done
+#command: while true; do sleep 3650d; done
+command: $STACKATO_DOCUMENT_ROOT/index-${tree}.sh --hang ; while true; do sleep 3650d; done

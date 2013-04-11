@@ -15,8 +15,6 @@ requirements:
     staging:
         ubuntu:
             - git
-            - python-pip
-            - python2.7-dev
     running:
         ubuntu:
             - subversion
@@ -45,8 +43,6 @@ hooks:
         - ln -s `which clang++-3.2` /staging/staged/python/bin/clang++
         - ln -s `which llvm-config-3.2` /staging/staged/python/bin/llvm-config
         - cp -f sqlite3.py $PYTHONUSERBASE/lib/python2.7/site-packages/
-        - cd dxr && git submodule init
-        - cd dxr && git submodule update
         - make -C dxr
         - cd dxr ; python setup.py build # --debug
         - cd dxr ; python setup.py install --user --skip-build
