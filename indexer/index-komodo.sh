@@ -40,8 +40,9 @@ cat >"${OUT_DIR}/dxr.config" <<-EOF
 
 	[Komodo]
 	source_folder       = ${KOMODO_DIR}
-	build_command       = python util/black/bk.py distclean     && \
-	                        python util/black/bk.py reconfigure && \
+	build_command       = cd ${KOMODO_DIR} && \
+	                        python util/black/bk.py configure \
+	                          -V 8.10.0-devel --moz-src=${MOZILLA_DIR%/mozilla} --without-docs && \
 	                        python util/black/bk.py build
 	object_folder       = ${KOMODO_DIR}/build/release
 	ignore_patterns     = .hg .git .svn .bzr .deps .libs *.pyc
@@ -75,7 +76,9 @@ cat >"${OUT_DIR}/dxr.config" <<-EOF
 
 cd ${APP_DIR}/dxr/bin
 python dxr-build.py -f "${OUT_DIR}/dxr.config"
-rsync -a "${OUT_DIR}/target" "${STACKATO_FILESYSTEM}"
+cd "${OUT_DIR}/target"
+tar cjvf "${OUT_DIR}/dxr.tar.bz2" .
+cp -f "${OUT_DIR}/dxr.tar.bz2" "${STACKATO_FILESYSTEM}/dxr.tar.bz2"
 echo Done.
 
 #  Prevent stackato from restarting this

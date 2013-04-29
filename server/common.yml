@@ -25,16 +25,7 @@ env:
     https_proxy: $http_proxy
 instances: 1
 hooks:
-    pre-staging:
-        # Don't use alternates in the VM, they don't exist
-        - rm -f dxr/.git/objects/info/alternates
-        # Force use of https: to fetch trilite (otherwise the proxy doesn't work?)
-        - git config --file dxr/.gitmodules --replace-all submodule.trilite.url
-            $(git config --file dxr/.gitmodules --get submodule.trilite.url |
-                sed s@git:@https:@)
     post-staging:
-        - cd dxr && git submodule init
-        - cd dxr && git submodule update
         - make -C dxr PLUGINS=
         - echo $PYTHONUSERBASE/$(python -c 'import sys; print "lib/python%s.%s/site-packages" % sys.version_info[:2]')
         - mkdir -p $PYTHONUSERBASE/$(python -c 'import sys; print "lib/python%s.%s/site-packages" % sys.version_info[:2]')
