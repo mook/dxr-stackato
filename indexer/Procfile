@@ -1,0 +1,1 @@
+worker: $HOME/index-dxr.sh --hang
