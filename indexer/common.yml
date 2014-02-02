@@ -1,16 +1,12 @@
 name: dxr-${tree}-indexer
-framework:
-    type: python
-    runtime: python27
 services:
     dxr-${tree}-www: filesystem
     ${name}-cache: filesystem
 requirements:
     ubuntu:
-        - ["ppa:h-rayflood/llvm"]
-        - clang-3.2
-        - libclang-3.2-dev
-        - llvm-3.2-dev
+        - clang-3.3
+        - libclang-3.3-dev
+        - llvm-3.3-dev
         - mercurial
     staging:
         ubuntu:
@@ -18,33 +14,16 @@ requirements:
     running:
         ubuntu:
             - subversion
-    pip:
-        - setuptools_git
-        - pysqlite
 instances: 1
-processes:
-    web: ~
+urls: []
 env:
-    https_proxy: $http_proxy
-    LD_LIBRARY_PATH: $STACKATO_DOCUMENT_ROOT/dxr/trilite
+    LD_LIBRARY_PATH: $HOME/dxr/trilite
     DXR_TREE: ${tree}
 hooks:
     pre-staging:
-        # Don't use alternates in the VM, they don't exist
-        - rm -f dxr/.git/objects/info/alternates
-        # Force use of https: to fetch trilite (otherwise the proxy doesn't work?)
-        - git config --file dxr/.gitmodules --replace-all submodule.trilite.url
-            $(git config --file dxr/.gitmodules --get submodule.trilite.url |
-                sed s@git:@https:@)
+        - sh pre-staging.sh
     post-staging:
-        - "[ ! -d /staging/staged/python/bin/ ] && mkdir -p /staging/staged/python/bin/"
-        - ln -s `which clang-3.2` /staging/staged/python/bin/clang
-        - ln -s `which clang++-3.2` /staging/staged/python/bin/clang++
-        - ln -s `which llvm-config-3.2` /staging/staged/python/bin/llvm-config
-        - cp -f sqlite3.py $PYTHONUSERBASE/lib/python2.7/site-packages/
-        - make -C dxr
-        - cd dxr ; python setup.py build # --debug
-        - cd dxr ; python setup.py install --user --skip-build
+        - sh post-staging.sh
     pre-running:
         - echo "pre-running!"
 

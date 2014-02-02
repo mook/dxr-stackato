@@ -1,8 +1,5 @@
 name: dxr-${tree}-server
-framework:
-    type: python
-    runtime: python27
-    start-file: dxr/dxr/dxr.wsgi
+instances: 1
 services:
     dxr-${tree}-www: filesystem
     ${name}-cache: filesystem
@@ -15,22 +12,12 @@ requirements:
         ubuntu:
             - mercurial
             - subversion
-    pip:
-        - setuptools_git
-        - pysqlite
 url:
     - dxr-${tree}.${target-base}
 env:
-    LD_LIBRARY_PATH: $STACKATO_DOCUMENT_ROOT/dxr/trilite
-    https_proxy: $http_proxy
-instances: 1
+    LD_LIBRARY_PATH: $HOME/dxr/trilite
 hooks:
     post-staging:
-        - make -C dxr PLUGINS=
-        - echo $PYTHONUSERBASE/$(python -c 'import sys; print "lib/python%s.%s/site-packages" % sys.version_info[:2]')
-        - mkdir -p $PYTHONUSERBASE/$(python -c 'import sys; print "lib/python%s.%s/site-packages" % sys.version_info[:2]')
-        - cp -f sqlite3.py $PYTHONUSERBASE/lib/python2.7/site-packages/
-        - cd dxr ; python setup.py build --debug
-        - cd dxr ; python setup.py install --user --skip-build
+        - sh -x post-staging.sh
 
 # vim: set et ts=4 :

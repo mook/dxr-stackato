@@ -1,6 +1,32 @@
 # stackato.yml for indexing DXR
-tree: dxr
-inherit: common.yml
-mem: 512M
-# DXR is small enough for indexing on launch to be worthwhile
-command: $STACKATO_DOCUMENT_ROOT/index-${tree}.sh --hang
+name: dxr-dxr-indexer
+instances: 1
+mem: 256M
+command: python $HOME/index-${tree}.py --hang
+url: []
+env:
+    LD_LIBRARY_PATH: $HOME/dxr/trilite
+    DXR_TREE: ${tree}
+services:
+    dxr-${tree}-www: filesystem
+    ${name}-cache: filesystem
+requirements:
+    ubuntu:
+        - mercurial
+    staging:
+        ubuntu:
+            - git
+            - libncurses5-dev
+            - libsqlite3-dev
+    running:
+        ubuntu:
+            - subversion
+hooks:
+    pre-staging:
+        - sh pre-staging.sh
+    post-staging:
+        - sh post-staging.sh
+    pre-running:
+        - echo "pre-running!"
+properties:
+    tree: dxr

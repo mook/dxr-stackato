@@ -2,7 +2,7 @@
 
 set -e
 
-APP_DIR="${STACKATO_DOCUMENT_ROOT}"
+APP_DIR="${HOME}"
 OUT_DIR="${APP_DIR}/build-root"
 [ -d "${OUT_DIR}" ] || mkdir -p "${OUT_DIR}"
 [ -d "${OUT_DIR}/dummy" ] || mkdir -p "${OUT_DIR}/dummy"
@@ -30,7 +30,7 @@ footer_text         =
 
 EOF
 
-dxr-build.py -f "${OUT_DIR}/dxr.config"
+dxr-build.py -f "${OUT_DIR}/dxr.config" || true
 echo Done.
 
 #  Prevent stackato from restarting this
