@@ -1,11 +1,39 @@
+import ctypes
 import os
 import os.path
 
-print(os.environ.get("LD_LIBRARY_PATH", "<missing>"))
+# Fake out the path to libtrilite.so
+old_CDLL = ctypes.CDLL
+def replacement_CDLL(name, mode=ctypes.DEFAULT_MODE, handle=None, use_errno=False, use_last_error=False):
+    if name == "libtrilite.so":
+        name = os.path.expanduser("~/dxr/trilite/libtrilite.so")
+    return old_CDLL(name, mode, handle, use_errno, use_last_error)
+ctypes.CDLL = replacement_CDLL
 
-ld_library_path = os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep)
-ld_library_path.append(os.path.expanduser("~/dxr/trilite"))
-os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(filter(bool, ld_library_path))
+try:
+    from dxr.app import make_app
 
-os.execvp("dxr-serve.py", ["dxr-serve.py", "--all", "--threaded",
-                           os.environ["DXR_FOLDER"]])
+    app = make_app(os.path.abspath(os.environ["DXR_FOLDER"]))
+    app.debug = True
+    app.run(host=os.environ["VCAP_APP_HOST"],
+            port=int(os.environ["VCAP_APP_PORT"]),
+            processes=1,
+            threaded=False)
+except Exception as ex:
+    import logging
+    import sys
+    logging.basicConfig(stream=sys.stdout)
+    logging.root.exception(ex)
+
+    # Fall back to avoid begin killed by Stackato
+    from flask import Flask
+    app = Flask("DXR-server-fallback",
+                instance_path=os.path.abspath(os.environ["DXR_FOLDER"]))
+    @app.route("/")
+    def dummy():
+        return "Application failed to start: %s" % (ex,)
+    app.debug = True
+    app.run(host=os.environ["VCAP_APP_HOST"],
+            port=int(os.environ["VCAP_APP_PORT"]),
+            processes=1,
+            threaded=False)

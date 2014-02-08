@@ -13,6 +13,10 @@ services:
 requirements:
     ubuntu:
         - mercurial
+        - clang-3.3
+        - libclang-3.3-dev
+        - llvm-3.3
+        - llvm-3.3-dev
     staging:
         ubuntu:
             - git
@@ -20,10 +24,8 @@ requirements:
             - libsqlite3-dev
     running:
         ubuntu:
-            - subversion
+            - git
 hooks:
-    pre-staging:
-        - sh pre-staging.sh
     post-staging:
         - sh post-staging.sh
     pre-running:

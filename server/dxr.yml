@@ -1,7 +1,7 @@
 # stackato.yml for serving DXR
 name: dxr-dxr-server
 instances: 1
-mem: 256M
+mem: 512M
 env:
     DXR_FOLDER: $STACKATO_FILESYSTEM_DXR_DXR_WWW
 properties:
@@ -15,10 +15,6 @@ requirements:
             - mercurial
             - git
             - libsqlite3-dev
-    running:
-        ubuntu:
-            - mercurial
-            - subversion
 url:
     - dxr-${tree}.${target-base}
 hooks:
