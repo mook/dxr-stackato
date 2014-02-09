@@ -8,7 +8,7 @@ env:
     LD_LIBRARY_PATH: $HOME/dxr/trilite
     DXR_TREE: ${tree}
 services:
-    dxr-${tree}-www: filesystem
+    dxr-www: filesystem
     ${name}-cache: filesystem
 requirements:
     ubuntu:
@@ -19,6 +19,7 @@ requirements:
         - llvm-3.3-dev
     staging:
         ubuntu:
+            - mercurial # needed for re2
             - libncurses5-dev
             - libsqlite3-dev
 hooks:

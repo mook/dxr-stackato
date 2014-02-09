@@ -28,7 +28,7 @@ def make_config(config):
             if exists(cache_dir):
                 call(["git", "pull"], cwd=cache_dir)
             else:
-                call(["git", "clone", upstream_url, cache_dir])
+                call(["git", "clone", "--bare", upstream_url, cache_dir])
             call(["git", "clone", cache_dir, komodo_dir])
             call(["git", "remote", "set-url", "origin", upstream_url], cwd=komodo_dir)
         else:
@@ -41,3 +41,6 @@ def make_config(config):
         "/src/codeintel/test2/scan_actual",
         "/src/codeintel/test2/scan_inputs/unicode/",
         "/src/codeintel/test2/tmp*"]))
+    config.set("komodo", "enabled_plugins", "pygmentize omniglot urllink buglink")
+    config.set("komodo", "plugin_buglink_name", "ActiveState Bugzilla")
+    config.set("komodo", "plugin_buglink_url", "http://bugs.activestate.com/show_bug.cgi?id=%s")

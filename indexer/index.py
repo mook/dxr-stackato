@@ -8,6 +8,7 @@ import ConfigParser
 import logging
 import imp
 import os
+import shutil
 import sys
 import time
 from os import environ
@@ -22,7 +23,6 @@ if not exists(join(build_root, "dummy")):
     os.makedirs(join(build_root, "dummy"))
 
 dxr_tree = environ["DXR_TREE"]
-target_folder = environ["STACKATO_FILESYSTEM_DXR_%s_WWW" % dxr_tree.upper()]
 
 class Config(ConfigParser.RawConfigParser):
     def set(self, section, option, value):
@@ -35,7 +35,7 @@ class Config(ConfigParser.RawConfigParser):
 
 # Initialize with default configuration
 config = Config()
-config.set("DXR", "target_folder", target_folder)
+config.set("DXR", "target_folder", join(build_root, "www"))
 config.set("DXR", "nb_jobs", "2")
 config.set("DXR", "temp_folder", join(build_root, "temp"))
 config.set("DXR", "log_folder", join(build_root, "logs"))
@@ -81,8 +81,63 @@ else:
     except:
         log.exception("Failed to build")
     else:
-        # TODO: Move files to target folder
-        pass
+        dist_path = environ["STACKATO_FILESYSTEM_DXR_WWW"]
+        trees_path = join(dist_path, "trees")
+        if not exists(trees_path):
+            os.makedirs(trees_path, 0775)
+        # Move the whole tree over first so it's on the same FS
+        stage_path = join(trees_path, dxr_tree + ".stage")
+        if exists(stage_path):
+            shutil.rmtree(stage_path)
+        shutil.move(join(build_root, "www", "trees", dxr_tree), stage_path)
+        try:
+            os.rename(join(trees_path, dxr_tree), join(trees_path, dxr_tree + ".old"))
+        except:
+            pass
+        os.rename(stage_path, join(trees_path, dxr_tree))
+        try:
+            shutil.rmtree(join(trees_path, dxr_tree + ".old"))
+        except:
+            pass
+        # Check if we actually have the correct folder structure set up...
+        for dirpath, dirs, files in os.walk(join(build_root, "www")):
+            for d in dirs:
+                src_path = join(dirpath, d)
+                dest_path = join(dist_path,
+                                 os.path.relpath(src_path, join(build_root, "www")))
+                if not exists(dest_path):
+                    os.makedirs(dest_path, 0775)
+            for f in files:
+                src_path = join(dirpath, f)
+                dest_path = join(dist_path,
+                                 os.path.relpath(src_path, join(build_root, "www")))
+                if not exists(dest_path):
+                    shutil.move(src_path, dest_path)
+
+        # Update the config if it doesn't know about our tree
+        mod = imp.load_source("dxr_www_config", join(dist_path, "config.py"))
+        if dxr_tree not in mod.TREES:
+            mode.TREES[dxr_tree] = dxr_tree.title()
+            config = """
+            # Settings, filled out by dxr-build.py -f FILE
+
+            from ordereddict import OrderedDict
+
+            TREES                 = {TREES}
+            WWW_ROOT              = {WWW_ROOT}
+            GENERATED_DATE        = {GENERATED_DATE}
+            DIRECTORY_INDEX       = {DIRECTORY_INDEX}
+            """.format(TREES=repr(mod.TREES),
+                       WWW_ROOT=repr(mod.WWW_ROOT),
+                       GENERATED_DATE=repr(mod.GENERATED_DATE),
+                       DIRECTORY_INDEX=repr(mod.DIRECTORY_INDEX))
+            config = "\n".join(x.lstrip() for x in config.splitlines())
+            with open(join(dist_path, "config.py"), "w") as config_file:
+                config_file.write(config)
+            try:
+                os.remove(join(dist_path, "config.pyc"))
+            except:
+                pass # no precompiled cache?
 
 if "--hang" in sys.argv:
     while True:
