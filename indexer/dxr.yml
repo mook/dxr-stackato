@@ -2,7 +2,7 @@
 name: dxr-dxr-indexer
 instances: 1
 mem: 256M
-command: python $HOME/index-${tree}.py --hang
+command: python $HOME/index.py --hang
 url: []
 env:
     LD_LIBRARY_PATH: $HOME/dxr/trilite
@@ -12,23 +12,17 @@ services:
     ${name}-cache: filesystem
 requirements:
     ubuntu:
-        - mercurial
+        - git
         - clang-3.3
         - libclang-3.3-dev
         - llvm-3.3
         - llvm-3.3-dev
     staging:
         ubuntu:
-            - git
             - libncurses5-dev
             - libsqlite3-dev
-    running:
-        ubuntu:
-            - git
 hooks:
     post-staging:
         - sh post-staging.sh
-    pre-running:
-        - echo "pre-running!"
 properties:
     tree: dxr

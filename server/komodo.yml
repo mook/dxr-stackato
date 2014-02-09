@@ -1,6 +1,22 @@
 # stackato.yml for serving Komodo
-tree: komodo
-inherit: common.yml
+name: dxr-komodo-server
+instances: 1
 mem: 256M
 env:
     DXR_FOLDER: $STACKATO_FILESYSTEM_DXR_KOMODO_WWW
+properties:
+    tree: komodo
+services:
+    dxr-${tree}-www: filesystem
+    ${name}-cache: filesystem
+requirements:
+    staging:
+        ubuntu:
+            - mercurial
+            - git
+            - libsqlite3-dev
+url:
+    - dxr-${tree}.${target-base}
+hooks:
+    post-staging:
+        - sh post-staging.sh

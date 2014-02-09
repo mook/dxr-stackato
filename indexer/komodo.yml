@@ -1,82 +1,28 @@
 # stackato.yml for indexing Komodo
 name: dxr-komodo-indexer
-framework:
-    type: python
-    runtime: python27
+instances: 1
+mem: 1024M
+command: python $HOME/index.py --hang
+url: []
+env:
+    LD_LIBRARY_PATH: $HOME/dxr/trilite
+    DXR_TREE: ${tree}
 services:
-    dxr-komodo-www: filesystem
-    komodo-cache: filesystem
+    dxr-${tree}-www: filesystem
+    ${name}-cache: filesystem
 requirements:
     ubuntu:
-        - ["ppa:h-rayflood/llvm"]
-        - clang-3.2
-        - libclang-3.2-dev
-        - llvm-3.2-dev
-        - mercurial
+        - git
+        - clang-3.3
+        - libclang-3.3-dev
+        - llvm-3.3
+        - llvm-3.3-dev
     staging:
         ubuntu:
-            - git
-    running:
-        ubuntu:
-            - subversion
-    pip:
-        - setuptools_git
-        - pysqlite
-instances: 1
-processes:
-    web: ~
-env:
-    https_proxy: $http_proxy
-    LD_LIBRARY_PATH: $STACKATO_DOCUMENT_ROOT/dxr/trilite
-    DXR_TREE: komodo
+            - libncurses5-dev
+            - libsqlite3-dev
 hooks:
-    pre-staging:
-        # Don't use alternates in the VM, they don't exist
-        - rm -f dxr/.git/objects/info/alternates
-        # Force use of https: to fetch trilite (otherwise the proxy doesn't work?)
-        - git config --file dxr/.gitmodules --replace-all submodule.trilite.url
-            $(git config --file dxr/.gitmodules --get submodule.trilite.url |
-                sed s@git:@https:@)
     post-staging:
-        - dpkg -l clang-3.2
-        - "[ ! -d $PYTHONUSERBASE/bin/ ] && mkdir -p $PYTHONUSERBASE/bin/"
-        - ln -s `which clang-3.2` "$PYTHONUSERBASE/bin/clang"
-        - ln -s `which clang++-3.2` "$PYTHONUSERBASE/bin/clang++"
-        - ln -s `which llvm-config-3.2` "$PYTHONUSERBASE/bin/llvm-config"
-        - "[ ! -d $PYTHONUSERBASE/lib/python2.7/site-packages/ ] && mkdir -p $PYTHONUSERBASE/lib/python2.7/site-packages/"
-        - cp -f sqlite3.py $PYTHONUSERBASE/lib/python2.7/site-packages/
-        - echo $PATH
-        - ls -lR "$PYTHONUSERBASE"
-        - make -C dxr
-        - cd dxr ; python setup.py build # --debug
-        - cd dxr ; python setup.py install --user --skip-build
-    pre-running:
-        - echo "pre-running!"
-
-
-mem: 4096M
-requirements:
-    running:
-        ubuntu:
-            - autoconf2.13
-            - libasound2-dev
-            - libcurl4-openssl-dev
-            - libiw-dev
-            - libnotify-dev
-            - libxt-dev
-            - mesa-common-dev
-            - uuid
-            - yasm
-            - cdbs
-            - m4
-            - autotools-dev
-            - zip
-            - libx11-dev
-            - libxt-dev
-            - libxext-dev
-            - libgtk2.0-dev
-            - libdbus-glib-1-dev
-            - rsync
-# Komodo is too large to index on launch
-#command: while true; do sleep 3650d; done
-command: $STACKATO_DOCUMENT_ROOT/index-komodo.sh --hang &>/app/logs/stdout.log ; while true; do sleep 3650d; done
+        - sh post-staging.sh
+properties:
+    tree: komodo

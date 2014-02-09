@@ -1,7 +1,7 @@
 # stackato.yml for serving DXR
 name: dxr-dxr-server
 instances: 1
-mem: 512M
+mem: 256M
 env:
     DXR_FOLDER: $STACKATO_FILESYSTEM_DXR_DXR_WWW
 properties:
@@ -19,4 +19,4 @@ url:
     - dxr-${tree}.${target-base}
 hooks:
     post-staging:
-        - sh -x post-staging.sh
+        - sh post-staging.sh
