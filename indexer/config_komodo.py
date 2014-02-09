@@ -13,13 +13,27 @@ def make_config(config):
     build_root = os.path.expanduser("~/build-root")
     komodo_dir = join(build_root, "komodo")
 
+
     if not exists(build_root):
         os.makedirs(build_root)
 
     if exists(komodo_dir):
         call(["git", "pull"], cwd=komodo_dir)
     else:
-        call(["git", "clone", "https://github.com/Komodo/KomodoEdit.git", komodo_dir])
+        upstream_url = "https://github.com/Komodo/KomodoEdit.git"
+        cache_key = ("STACKATO_FILESYSTEM_%s_CACHE" %
+                     (os.environ.get("STACKATO_APP_NAME_UPCASE", "KOMODO"),))
+        if cache_key in os.environ:
+            cache_dir = join(os.environ[cache_key], "komodo")
+            if exists(cache_dir):
+                call(["git", "pull"], cwd=cache_dir)
+            else:
+                call(["git", "clone", upstream_url, cache_dir])
+            call(["git", "clone", cache_dir, komodo_dir])
+            call(["git", "remote", "set-url", "origin", upstream_url], cwd=komodo_dir)
+        else:
+            call(["git", "clone", upstream_url, komodo_dir])
+
     config.set("komodo", "source_folder", komodo_dir)
     config.set("komodo", "ignore_patterns", " ".join([
         ".hg", ".git", ".svn", ".bzr", ".deps", ".libs", "*.pyc",
